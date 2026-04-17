@@ -19,11 +19,13 @@ from rich.panel import Panel
 from rich.columns import Columns
 from rich.text import Text
 from rich import box
+from pyscript import document
 
 # ─────────────────────────────────────────────
 # KONFIGURASI GLOBAL
 # ─────────────────────────────────────────────
-console = Console()
+# console = Console()
+console = Console(force_terminal=True, width=100)
 
 WEIGHTS = {
     "technical": 0.55,   # 55% bobot teknikal
@@ -495,56 +497,101 @@ def display_disclaimer():
 # SECTION 7: MAIN ENTRYPOINT
 # ═══════════════════════════════════════════════
 
-def main():
-    console.rule("[bold cyan]STOCK ANALYZER PRO v2.0[/bold cyan]")
-    console.print()
+def run_analysis(event):
+    # Ambil nilai dari input HTML
+    input_text = document.querySelector("#stock-input")
+    symbol = input_text.value.strip().upper()
+    
+    if not symbol:
+        symbol = "BBCA.JK"
 
-    # Input
-    raw = input("Masukkan kode saham (contoh: BBCA.JK, AAPL): ").strip()
-    symbol = raw.upper() if raw else "BBCA.JK"
+    # Bersihkan layar output sebelumnya (opsional)
+    output_div = document.querySelector("#output")
+    output_div.innerHTML = ""
 
-    console.print(f"\n[dim]⏳ Mengambil data untuk [bold]{symbol}[/bold] ...[/dim]\n")
+    # Jalankan logika analisis
+    with console.capture() as capture:
+        try:
+            console.rule(f"[bold cyan]ANALISIS: {symbol}[/bold cyan]")
+            
+            df, info = fetch_data(symbol)
+            df = calculate_technical_indicators(df)
+            tech_score, tech_signals = score_technical(df)
+            funda_score, funda_metrics = score_fundamental(info)
+            result = compute_composite_score(tech_score, funda_score)
+            style  = get_investment_style(funda_score, tech_score)
+            
+            currency = "Rp " if symbol.endswith(".JK") else ""
+            forecast = forecast_price(df)
 
-    # ── Fetch Data ──
-    df, info = fetch_data(symbol)
+            # Tampilkan semua display functions kamu di sini
+            display_header(info, symbol)
+            display_sentiment(result)
+            display_score_summary(tech_score, funda_score)
+            display_technical_signals(tech_signals)
+            display_fundamental_metrics(funda_metrics)
+            display_forecast(forecast, currency)
+            display_investment_style(style, result)
+            display_disclaimer()
+            
+        except Exception as e:
+            console.print(f"[bold red]Terjadi Kesalahan: {e}[/bold red]")
 
-    # ── Technical ──
-    df = calculate_technical_indicators(df)
-    tech_score, tech_signals = score_technical(df)
-
-    # ── Fundamental ──
-    funda_score, funda_metrics = score_fundamental(info)
-
-    # ── Scoring & Decision ──
-    result = compute_composite_score(tech_score, funda_score)
-    style  = get_investment_style(funda_score, tech_score)
-
-    # ── Forecast ──
-    currency = "Rp " if symbol.endswith(".JK") else ""
-    forecast = forecast_price(df)
-
-    # ─────────────────────── DISPLAY ───────────────────────
-    console.rule("[bold]LAPORAN ANALISA[/bold]")
-
-    display_header(info, symbol)
-    display_sentiment(result)
-    display_score_summary(tech_score, funda_score)
-
-    console.print()
-    display_technical_signals(tech_signals)
-
-    console.print()
-    display_fundamental_metrics(funda_metrics)
-
-    console.print()
-    display_forecast(forecast, currency)
-
-    console.print()
-    display_investment_style(style, result)
-
-    display_disclaimer()
-    console.rule()
+    # Masukkan hasil capture 'rich' ke dalam div HTML
+    output_div.innerText = capture.get()
 
 
-if __name__ == "__main__":
-    main()
+
+# def main():
+#     console.rule("[bold cyan]STOCK ANALYZER PRO v2.0[/bold cyan]")
+#     console.print()
+
+#     # Input
+#     raw = input("Masukkan kode saham (contoh: BBCA.JK, AAPL): ").strip()
+#     symbol = raw.upper() if raw else "BBCA.JK"
+
+#     console.print(f"\n[dim]⏳ Mengambil data untuk [bold]{symbol}[/bold] ...[/dim]\n")
+
+#     # ── Fetch Data ──
+#     df, info = fetch_data(symbol)
+
+#     # ── Technical ──
+#     df = calculate_technical_indicators(df)
+#     tech_score, tech_signals = score_technical(df)
+
+#     # ── Fundamental ──
+#     funda_score, funda_metrics = score_fundamental(info)
+
+#     # ── Scoring & Decision ──
+#     result = compute_composite_score(tech_score, funda_score)
+#     style  = get_investment_style(funda_score, tech_score)
+
+#     # ── Forecast ──
+#     currency = "Rp " if symbol.endswith(".JK") else ""
+#     forecast = forecast_price(df)
+
+#     # ─────────────────────── DISPLAY ───────────────────────
+#     console.rule("[bold]LAPORAN ANALISA[/bold]")
+
+#     display_header(info, symbol)
+#     display_sentiment(result)
+#     display_score_summary(tech_score, funda_score)
+
+#     console.print()
+#     display_technical_signals(tech_signals)
+
+#     console.print()
+#     display_fundamental_metrics(funda_metrics)
+
+#     console.print()
+#     display_forecast(forecast, currency)
+
+#     console.print()
+#     display_investment_style(style, result)
+
+#     display_disclaimer()
+#     console.rule()
+
+
+# if __name__ == "__main__":
+#     main()

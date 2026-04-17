@@ -3,15 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Python di GitHub Pages</title>
+    <title>Stock Analyzer Pro v2.0</title>
     <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
     <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #1a1a1a; color: white; }
+        #output { background-color: #000; padding: 15px; border-radius: 8px; white-space: pre-wrap; font-family: monospace; }
+        input { padding: 8px; border-radius: 4px; border: none; }
+        button { padding: 8px 15px; border-radius: 4px; border: none; background-color: #007bff; color: white; cursor: pointer; }
+    </style>
 </head>
 <body>
-    <h1>Menjalankan Python di Browser</h1>
+    <h1>Stock Analyzer Pro v2.0</h1>
     
-    <script type="py" src="./main.py" config="./pyscript.json"></script>
+    <div style="margin-bottom: 20px;">
+        <input type="text" id="stock-input" placeholder="Contoh: BBCA.JK atau AAPL">
+        <button id="run-btn" py-click="run_analysis">Analisa Sekarang</button>
+    </div>
 
-    <div id="output"></div>
+    <div id="output">
+        <script type="py" src="./main.py" config="./pyscript.json"></script>
+    </div>
 </body>
 </html>
